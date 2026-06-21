@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://finance-tracker-api.onrender.com/api/$1" }
+    { "source": "/api/(.*)", "destination": "https://finance-tracker-api-ebp8.onrender.com/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
