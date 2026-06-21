@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import client from '../api/client'
+import { getCategoryMeta } from '../utils/category'
+
+const ICONS = ['💰', '🍕', '🏠', '🚗', '🛍️', '💻', '🎬', '📄', '🛒', '💊', '📚', '🎮', '✈️', '🏋️', '🎵', '📺', '☕', '🍺', '🎁', '🔧']
 
 export default function Categories() {
   const [list, setList] = useState([])
@@ -14,13 +17,13 @@ export default function Categories() {
 
   const openCreate = () => {
     setEditId(null)
-    setForm({ name: '', type: 'EXPENSE', icon: '' })
+    setForm({ name: '', type: 'EXPENSE', icon: ICONS[0] })
     setShowModal(true)
   }
 
   const openEdit = (c) => {
     setEditId(c.uuid)
-    setForm({ name: c.name, type: c.type, icon: c.icon || '' })
+    setForm({ name: c.name, type: c.type, icon: c.icon || getCategoryMeta(c.name).icon })
     setShowModal(true)
   }
 
@@ -45,38 +48,61 @@ export default function Categories() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        {list.map(c => (
-          <div key={c.uuid} className="card flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{c.icon || '📁'}</span>
-              <div>
-                <p className="font-medium">{c.name}</p>
-                <p className={`text-xs ${c.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>{c.type}</p>
+      {list.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {list.map(c => {
+            const meta = getCategoryMeta(c.name)
+            return (
+              <div key={c.uuid} className="card flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-lg flex items-center justify-center text-lg" style={{ backgroundColor: meta.color + '20' }}>
+                    {c.icon || meta.icon}
+                  </span>
+                  <div>
+                    <p className="font-medium">{c.name}</p>
+                    <p className={`text-xs ${c.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>{c.type}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => openEdit(c)} className="text-[#94a3b8] hover:text-white p-1"><Pencil size={14} /></button>
+                  <button onClick={() => handleDelete(c.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
+                </div>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => openEdit(c)} className="text-[#94a3b8] hover:text-white p-1"><Pencil size={14} /></button>
-              <button onClick={() => handleDelete(c.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
-            </div>
-          </div>
-        ))}
-        {list.length === 0 && (
-          <div className="col-span-2 card text-center text-[#94a3b8]">No categories yet</div>
-        )}
-      </div>
+            )
+          })}
+        </div>
+      ) : (
+        <div className="card py-12 text-center">
+          <p className="text-3xl mb-3">📂</p>
+          <p className="text-[#94a3b8] font-medium">No categories yet</p>
+          <p className="text-xs text-[#64748b] mt-1">Create income and expense categories to track your money</p>
+          <button onClick={openCreate} className="mt-4 bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2">
+            <Plus size={14} /> Add Category
+          </button>
+        </div>
+      )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center" onClick={() => setShowModal(false)}>
-          <div className="card w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
+          <div className="card w-full max-w-sm space-y-4 mx-4" onClick={e => e.stopPropagation()}>
             <h2 className="font-semibold text-lg">{editId ? 'Edit' : 'Add'} Category</h2>
             <input type="text" placeholder="Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
             <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
               <option value="EXPENSE">Expense</option>
               <option value="INCOME">Income</option>
             </select>
-            <input type="text" placeholder="Icon emoji (optional)" value={form.icon} onChange={e => setForm(f => ({ ...f, icon: e.target.value }))} />
-            <div className="flex gap-3 justify-end">
+            <div>
+              <label className="text-xs text-[#94a3b8]">Icon</label>
+              <div className="flex flex-wrap gap-2 mt-1.5">
+                {ICONS.map(ic => (
+                  <button key={ic} onClick={() => setForm(f => ({ ...f, icon: ic }))}
+                    className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-colors ${form.icon === ic ? 'ring-2 ring-indigo-500 bg-indigo-500/20' : 'bg-[#334155] hover:bg-[#475569]'}`}>
+                    {ic}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end pt-2">
               <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg bg-[#334155] hover:bg-[#475569] text-sm">Cancel</button>
               <button onClick={handleSave} className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-sm font-medium">Save</button>
             </div>

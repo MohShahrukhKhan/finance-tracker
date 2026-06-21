@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import client from '../api/client'
+import { getCategoryMeta, formatCurrency } from '../utils/category'
 
 export default function Budgets() {
   const [list, setList] = useState([])
@@ -54,7 +55,7 @@ export default function Budgets() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold">Budgets</h1>
         <div className="flex gap-3 items-center">
           <input type="month" value={month.slice(0, 7)} onChange={e => setMonth(e.target.value + '-01')} className="w-44" />
@@ -64,46 +65,60 @@ export default function Budgets() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        {list.map(b => {
-          const pct = percentage(b.spent, b.limitAmount)
-          return (
-            <div key={b.uuid} className="card">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="font-medium">{b.categoryName}</p>
-                  <p className="text-sm text-[#94a3b8]">₹{Number(b.spent).toLocaleString()} / ₹{Number(b.limitAmount).toLocaleString()}</p>
+      {list.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {list.map(b => {
+            const pct = percentage(b.spent, b.limitAmount)
+            const meta = getCategoryMeta(b.categoryName)
+            return (
+              <div key={b.uuid} className="card">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-lg flex items-center justify-center text-lg" style={{ backgroundColor: meta.color + '20' }}>
+                      {meta.icon}
+                    </span>
+                    <div>
+                      <p className="font-medium">{b.categoryName}</p>
+                      <p className="text-sm text-[#94a3b8]">{formatCurrency(b.spent)} / {formatCurrency(b.limitAmount)}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => openEdit(b)} className="text-[#94a3b8] hover:text-white p-1"><Pencil size={14} /></button>
+                    <button onClick={() => handleDelete(b.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => openEdit(b)} className="text-[#94a3b8] hover:text-white p-1"><Pencil size={14} /></button>
-                  <button onClick={() => handleDelete(b.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
+                <div className="h-2 bg-[#334155] rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${pct >= 90 ? 'bg-red-500' : pct >= 75 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
+                <p className={`text-xs mt-1 ${pct >= 90 ? 'text-red-400' : pct >= 75 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  {pct}% used
+                </p>
               </div>
-              <div className="h-2 bg-[#334155] rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${pct >= 90 ? 'bg-red-500' : pct >= 75 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <p className={`text-xs mt-1 ${pct >= 90 ? 'text-red-400' : pct >= 75 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                {pct}% used
-              </p>
-            </div>
-          )
-        })}
-        {list.length === 0 && (
-          <div className="col-span-2 card text-center text-[#94a3b8]">No budgets set for this month</div>
-        )}
-      </div>
+            )
+          })}
+        </div>
+      ) : (
+        <div className="card py-12 text-center">
+          <p className="text-3xl mb-3">🎯</p>
+          <p className="text-[#94a3b8] font-medium">No budgets set for this month</p>
+          <p className="text-xs text-[#64748b] mt-1">Set spending limits to track your expenses</p>
+          <button onClick={openCreate} className="mt-4 bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2">
+            <Plus size={14} /> Set Budget
+          </button>
+        </div>
+      )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center" onClick={() => setShowModal(false)}>
-          <div className="card w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
+          <div className="card w-full max-w-sm space-y-4 mx-4" onClick={e => e.stopPropagation()}>
             <h2 className="font-semibold text-lg">{editId ? 'Edit' : 'Set'} Budget</h2>
             <select value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}>
               <option value="">Select category</option>
               {categories.filter(c => c.type === 'EXPENSE').map(c => (
-                <option key={c.uuid} value={c.uuid}>{c.icon} {c.name}</option>
+                <option key={c.uuid} value={c.uuid}>{getCategoryMeta(c.name).icon} {c.name}</option>
               ))}
             </select>
             <input type="number" step="0.01" placeholder="Monthly limit" value={form.limitAmount} onChange={e => setForm(f => ({ ...f, limitAmount: e.target.value }))} />

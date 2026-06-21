@@ -18,7 +18,6 @@ services:
 
   backend:
     build: ./backend
-    platform: linux/amd64
     container_name: ft-backend
     ports:
       - "8081:8081"

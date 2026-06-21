@@ -40,7 +40,7 @@ jobs:
           cache: 'maven'
 
       - name: Build and test
-        run: ./mvnw verify -B
+        run: ./mvnw verify -B -DexcludeGroups=integration
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/finance_tracker
           SPRING_DATASOURCE_USERNAME: postgres
