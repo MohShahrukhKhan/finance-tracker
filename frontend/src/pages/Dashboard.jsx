@@ -144,6 +144,32 @@ export default function Dashboard() {
         )}
       </div>
 
+      {summary && Number(summary.income) === 0 && Number(summary.expense) === 0 && (
+        <div className="card bg-gradient-to-br from-indigo-500/5 to-purple-500/5 border-indigo-500/20">
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">👋</span>
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold mb-2">Welcome to Finance Tracker!</h2>
+              <p className="text-sm text-[#94a3b8] mb-4">Get started with these steps:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="flex items-center gap-3 bg-[#1e293b]/50 rounded-lg p-3">
+                  <span className="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0">1</span>
+                  <p className="text-sm">Create income & expense categories</p>
+                </div>
+                <div className="flex items-center gap-3 bg-[#1e293b]/50 rounded-lg p-3">
+                  <span className="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0">2</span>
+                  <p className="text-sm">Add your first transaction</p>
+                </div>
+                <div className="flex items-center gap-3 bg-[#1e293b]/50 rounded-lg p-3">
+                  <span className="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0">3</span>
+                  <p className="text-sm">Set monthly budgets</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
           <div className="flex items-center justify-between mb-4">

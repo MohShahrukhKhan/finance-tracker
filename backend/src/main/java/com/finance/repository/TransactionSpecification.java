@@ -43,6 +43,11 @@ public class TransactionSpecification {
         };
     }
 
+    public static Specification<Transaction> byNote(String note) {
+        return (root, query, cb) ->
+            cb.like(cb.lower(root.get("note")), "%" + note.toLowerCase() + "%");
+    }
+
     public static Specification<Transaction> notDeleted() {
         return (root, query, cb) -> cb.isFalse(root.get("deleted"));
     }

@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search } from 'lucide-react'
 import client from '../api/client'
 import { getCategoryMeta, formatCurrency } from '../utils/category'
+import { useToast } from '../context/ToastContext'
+import ConfirmModal from '../components/ConfirmModal'
 
 function getQuickDates(key) {
   const now = new Date(), y = now.getFullYear(), m = now.getMonth(), d = now.getDate()
@@ -16,6 +18,7 @@ function getQuickDates(key) {
 function fmt(d) { return d ? d.toISOString().split('T')[0] : '' }
 
 export default function Transactions() {
+  const { showToast } = useToast()
   const [data, setData] = useState([])
   const [categories, setCategories] = useState([])
   const [page, setPage] = useState(0)
@@ -24,23 +27,27 @@ export default function Transactions() {
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [categoryId, setCatId] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [editId, setEditId] = useState(null)
   const [form, setForm] = useState({ amount: '', note: '', transactionDate: '', categoryId: '' })
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const filters = useMemo(() => {
     if (quick) {
       const d = getQuickDates(quick)
-      return { fromDate: fmt(d.from), toDate: fmt(d.to), categoryId }
+      return { fromDate: fmt(d.from), toDate: fmt(d.to), categoryId, note: searchTerm || null }
     }
-    return { fromDate, toDate, categoryId }
-  }, [quick, fromDate, toDate, categoryId])
+    return { fromDate, toDate, categoryId, note: searchTerm || null }
+  }, [quick, fromDate, toDate, categoryId, searchTerm])
 
   const fetch = () => {
     const params = { page, size: 15 }
     if (filters.fromDate) params.fromDate = filters.fromDate
     if (filters.toDate) params.toDate = filters.toDate
     if (filters.categoryId) params.categoryId = filters.categoryId
+    if (filters.note) params.note = filters.note
     client.get('/transactions', { params }).then(r => {
       setData(r.data.content)
       setTotalPages(r.data.totalPages)
@@ -66,15 +73,34 @@ export default function Transactions() {
   }
 
   const handleSave = async () => {
-    if (editId) await client.put(`/transactions/${editId}`, form)
-    else await client.post('/transactions', form)
-    setShowModal(false)
-    fetch()
+    try {
+      if (editId) {
+        await client.put(`/transactions/${editId}`, form)
+        showToast('Transaction updated successfully')
+      } else {
+        await client.post('/transactions', form)
+        showToast('Transaction created successfully')
+      }
+      setShowModal(false)
+      fetch()
+    } catch {
+      showToast('Failed to save transaction', 'error')
+    }
   }
 
-  const handleDelete = async (uuid) => {
-    await client.delete(`/transactions/${uuid}`)
-    fetch()
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await client.delete(`/transactions/${deleteTarget}`)
+      showToast('Transaction deleted')
+      setDeleteTarget(null)
+      fetch()
+    } catch {
+      showToast('Failed to delete transaction', 'error')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const setQuickFilter = (key) => {
@@ -93,7 +119,7 @@ export default function Transactions() {
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex gap-1.5 flex-wrap items-center">
           {[
             { label: '7D', key: '7d' },
@@ -112,11 +138,22 @@ export default function Transactions() {
           <input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); setQuick(''); setPage(0) }} className="flex-1 min-w-0 text-xs" placeholder="From" />
           <span className="text-[#64748b] text-xs">–</span>
           <input type="date" value={toDate} onChange={e => { setToDate(e.target.value); setQuick(''); setPage(0) }} className="flex-1 min-w-0 text-xs" placeholder="To" />
-          <select value={categoryId} onChange={e => { setCatId(e.target.value); setPage(0) }} className="w-32 text-xs">
+          <select value={categoryId} onChange={e => { setCatId(e.target.value); setPage(0) }} className="w-28 text-xs">
             <option value="">All</option>
             {categories.map(c => <option key={c.uuid} value={c.uuid}>{getCategoryMeta(c.name).icon} {c.name}</option>)}
           </select>
         </div>
+      </div>
+
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748b]" />
+        <input
+          type="text"
+          placeholder="Search by note..."
+          value={searchTerm}
+          onChange={e => { setSearchTerm(e.target.value); setPage(0) }}
+          className="pl-9 text-sm"
+        />
       </div>
 
       <div>
@@ -144,7 +181,7 @@ export default function Transactions() {
                     </td>
                     <td className="p-3 text-right">
                       <button onClick={() => openEdit(t)} className="text-[#94a3b8] hover:text-white mr-2"><Pencil size={14} /></button>
-                      <button onClick={() => handleDelete(t.uuid)} className="text-red-400 hover:text-red-300"><Trash2 size={14} /></button>
+                      <button onClick={() => setDeleteTarget(t.uuid)} className="text-red-400 hover:text-red-300"><Trash2 size={14} /></button>
                     </td>
                   </tr>
                 )
@@ -169,7 +206,7 @@ export default function Transactions() {
                 </div>
                 <div className="flex gap-1">
                   <button onClick={() => openEdit(t)} className="text-[#94a3b8] hover:text-white p-1"><Pencil size={14} /></button>
-                  <button onClick={() => handleDelete(t.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
+                  <button onClick={() => setDeleteTarget(t.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
                 </div>
               </div>
             )
@@ -179,7 +216,9 @@ export default function Transactions() {
           <div className="py-12 text-center">
             <p className="text-3xl mb-3">📭</p>
             <p className="text-[#94a3b8] font-medium">No transactions found</p>
-            <p className="text-xs text-[#64748b] mt-1">Start by adding your first transaction</p>
+            <p className="text-xs text-[#64748b] mt-1">
+              {searchTerm ? 'Try a different search term' : fromDate ? 'Try adjusting your date range' : 'Start by adding your first transaction'}
+            </p>
             <button onClick={openCreate} className="mt-4 bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2">
               <Plus size={14} /> Add Transaction
             </button>
@@ -196,6 +235,15 @@ export default function Transactions() {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete Transaction"
+        message="Are you sure you want to delete this transaction? This action cannot be undone."
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+        loading={deleting}
+      />
 
       {showModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowModal(false)}>

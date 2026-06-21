@@ -31,13 +31,14 @@ public class TransactionController {
         @RequestParam(required = false) String categoryId,
         @RequestParam(required = false) BigDecimal minAmount,
         @RequestParam(required = false) BigDecimal maxAmount,
+        @RequestParam(required = false) String note,
         @RequestParam(defaultValue = "transactionDate") String sortBy,
         @RequestParam(defaultValue = "desc") String sortDirection,
         Principal principal
     ) {
         return ResponseEntity.ok(transactionService.search(
             principal.getName(), page, size, fromDate, toDate,
-            categoryId, minAmount, maxAmount, sortBy, sortDirection
+            categoryId, minAmount, maxAmount, note, sortBy, sortDirection
         ));
     }
 

@@ -70,7 +70,7 @@ class TransactionServiceTest {
         when(transactionRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
         PagedResponse<TransactionResponse> result = transactionService.search(
-            "test@test.com", 0, 10, null, null, null, null, null, null, null);
+            "test@test.com", 0, 10, null, null, null, null, null, null, null, null);
 
         assertEquals(1, result.totalElements());
         assertEquals("Test", result.content().get(0).note());

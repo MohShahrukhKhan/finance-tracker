@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import client from '../api/client'
 import { getCategoryMeta, formatCurrency } from '../utils/category'
+import { useToast } from '../context/ToastContext'
+import ConfirmModal from '../components/ConfirmModal'
 
 export default function Budgets() {
+  const { showToast } = useToast()
   const [list, setList] = useState([])
   const [categories, setCategories] = useState([])
   const [month, setMonth] = useState(() => {
@@ -13,6 +16,8 @@ export default function Budgets() {
   const [showModal, setShowModal] = useState(false)
   const [editId, setEditId] = useState(null)
   const [form, setForm] = useState({ categoryId: '', limitAmount: '', month: month })
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const fetch = () => {
     client.get('/budgets', { params: { month } }).then(r => setList(r.data))
@@ -37,15 +42,34 @@ export default function Budgets() {
   }
 
   const handleSave = async () => {
-    if (editId) await client.put(`/budgets/${editId}`, form)
-    else await client.post('/budgets', form)
-    setShowModal(false)
-    fetch()
+    try {
+      if (editId) {
+        await client.put(`/budgets/${editId}`, form)
+        showToast('Budget updated successfully')
+      } else {
+        await client.post('/budgets', form)
+        showToast('Budget created successfully')
+      }
+      setShowModal(false)
+      fetch()
+    } catch {
+      showToast('Failed to save budget', 'error')
+    }
   }
 
-  const handleDelete = async (uuid) => {
-    await client.delete(`/budgets/${uuid}`)
-    fetch()
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await client.delete(`/budgets/${deleteTarget}`)
+      showToast('Budget deleted')
+      setDeleteTarget(null)
+      fetch()
+    } catch {
+      showToast('Failed to delete budget', 'error')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const percentage = (spent, limit) => {
@@ -84,7 +108,7 @@ export default function Budgets() {
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => openEdit(b)} className="text-[#94a3b8] hover:text-white p-1"><Pencil size={14} /></button>
-                    <button onClick={() => handleDelete(b.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
+                    <button onClick={() => setDeleteTarget(b.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
                   </div>
                 </div>
                 <div className="h-2 bg-[#334155] rounded-full overflow-hidden">
@@ -110,6 +134,15 @@ export default function Budgets() {
           </button>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete Budget"
+        message="Are you sure you want to delete this budget?"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+        loading={deleting}
+      />
 
       {showModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowModal(false)}>

@@ -42,7 +42,7 @@ public class TransactionService {
         String email, int page, int size,
         LocalDate fromDate, LocalDate toDate,
         String categoryId, BigDecimal minAmount, BigDecimal maxAmount,
-        String sortBy, String sortDirection
+        String note, String sortBy, String sortDirection
     ) {
         User user = getUser(email);
 
@@ -58,6 +58,9 @@ public class TransactionService {
         }
         if (minAmount != null || maxAmount != null) {
             spec = spec.and(byAmountRange(minAmount, maxAmount));
+        }
+        if (note != null && !note.isBlank()) {
+            spec = spec.and(byNote(note));
         }
 
         Sort sort = Sort.by(

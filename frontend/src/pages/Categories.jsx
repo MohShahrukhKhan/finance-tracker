@@ -2,14 +2,19 @@ import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import client from '../api/client'
 import { getCategoryMeta } from '../utils/category'
+import { useToast } from '../context/ToastContext'
+import ConfirmModal from '../components/ConfirmModal'
 
 const ICONS = ['💰', '🍕', '🏠', '🚗', '🛍️', '💻', '🎬', '📄', '🛒', '💊', '📚', '🎮', '✈️', '🏋️', '🎵', '📺', '☕', '🍺', '🎁', '🔧']
 
 export default function Categories() {
+  const { showToast } = useToast()
   const [list, setList] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [editId, setEditId] = useState(null)
   const [form, setForm] = useState({ name: '', type: 'EXPENSE', icon: '' })
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const fetch = () => client.get('/categories').then(r => setList(r.data))
 
@@ -28,15 +33,34 @@ export default function Categories() {
   }
 
   const handleSave = async () => {
-    if (editId) await client.put(`/categories/${editId}`, form)
-    else await client.post('/categories', form)
-    setShowModal(false)
-    fetch()
+    try {
+      if (editId) {
+        await client.put(`/categories/${editId}`, form)
+        showToast('Category updated successfully')
+      } else {
+        await client.post('/categories', form)
+        showToast('Category created successfully')
+      }
+      setShowModal(false)
+      fetch()
+    } catch {
+      showToast('Failed to save category', 'error')
+    }
   }
 
-  const handleDelete = async (uuid) => {
-    await client.delete(`/categories/${uuid}`)
-    fetch()
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await client.delete(`/categories/${deleteTarget}`)
+      showToast('Category deleted')
+      setDeleteTarget(null)
+      fetch()
+    } catch {
+      showToast('Failed to delete category', 'error')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -65,7 +89,7 @@ export default function Categories() {
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => openEdit(c)} className="text-[#94a3b8] hover:text-white p-1"><Pencil size={14} /></button>
-                  <button onClick={() => handleDelete(c.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
+                  <button onClick={() => setDeleteTarget(c.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
                 </div>
               </div>
             )
@@ -81,6 +105,15 @@ export default function Categories() {
           </button>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete Category"
+        message="Are you sure you want to delete this category? Transactions using this category may be affected."
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+        loading={deleting}
+      />
 
       {showModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
