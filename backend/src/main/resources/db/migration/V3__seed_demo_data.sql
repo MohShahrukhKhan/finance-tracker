@@ -2,15 +2,15 @@
 DO $$
 DECLARE
   uid CONSTANT BIGINT := 1;
-  cat_home UUID := 'a92f6d84-5ecf-46e3-8b27-4e3e9e167ce0';
-  cat_office UUID := 'e8cc1715-0e95-463b-adff-34d205edb4a2';
-  cat_salary UUID := 'dafc8346-608f-46c7-8251-64d6f04bb176';
-  cat_food UUID := 'b7892f4d-f8e0-4234-905f-5b49cd5505f7';
-  cat_rent UUID := '972726e4-4654-4acb-87e1-d709d6dafd45';
-  cat_freelance UUID := 'b875eccd-407b-45ff-a684-99499cf103eb';
-  cat_transport UUID := '25b5b8e9-7d97-405f-8a53-92263299a706';
-  cat_shopping UUID := 'f1a2b3c4-d5e6-7890-abcd-ef0123456789';
-  cat_health UUID := 'f2a2b3c4-d5e6-7890-abcd-ef0123456789';
+  cat_home VARCHAR := 'a92f6d84-5ecf-46e3-8b27-4e3e9e167ce0';
+  cat_office VARCHAR := 'e8cc1715-0e95-463b-adff-34d205edb4a2';
+  cat_salary VARCHAR := 'dafc8346-608f-46c7-8251-64d6f04bb176';
+  cat_food VARCHAR := 'b7892f4d-f8e0-4234-905f-5b49cd5505f7';
+  cat_rent VARCHAR := '972726e4-4654-4acb-87e1-d709d6dafd45';
+  cat_freelance VARCHAR := 'b875eccd-407b-45ff-a684-99499cf103eb';
+  cat_transport VARCHAR := '25b5b8e9-7d97-405f-8a53-92263299a706';
+  cat_shopping VARCHAR := 'f1a2b3c4-d5e6-7890-abcd-ef0123456789';
+  cat_health VARCHAR := 'f2a2b3c4-d5e6-7890-abcd-ef0123456789';
 BEGIN
 
 -- Skip if already seeded
@@ -88,7 +88,7 @@ INSERT INTO transactions (uuid, user_id, category_id, amount, note, transaction_
   (gen_random_uuid(), uid, (SELECT id FROM categories WHERE uuid = cat_office), 5000.00, 'Office expense reimbursement', '2026-06-28');
 
 -- Budgets
-INSERT INTO budgets (uuid, user_id, category_id, month, amount) VALUES
+INSERT INTO budgets (uuid, user_id, category_id, month, limit_amount) VALUES
   (gen_random_uuid(), uid, (SELECT id FROM categories WHERE uuid = cat_food), '2026-06-01'::date, 8000.00),
   (gen_random_uuid(), uid, (SELECT id FROM categories WHERE uuid = cat_rent), '2026-06-01'::date, 20000.00),
   (gen_random_uuid(), uid, (SELECT id FROM categories WHERE uuid = cat_transport), '2026-06-01'::date, 3000.00),
