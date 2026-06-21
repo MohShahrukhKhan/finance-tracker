@@ -95,9 +95,10 @@ export default function Dashboard() {
               {p.label}
             </button>
           ))}
-          <div className="flex gap-2">
-            <input type="date" value={fmt(dates.from)} onChange={e => { setPeriod('custom'); /* handled via dates */ }} className="w-28 md:w-32 text-xs" />
-            <input type="date" value={fmt(dates.to)} onChange={e => setPeriod('custom')} className="w-28 md:w-32 text-xs" />
+          <div className="flex gap-2 w-full sm:w-auto">
+            <input type="date" value={fmt(dates.from)} onChange={e => { setPeriod('custom'); /* handled via dates */ }} className="flex-1 min-w-0 text-xs" />
+            <span className="text-[#64748b] text-xs self-center">–</span>
+            <input type="date" value={fmt(dates.to)} onChange={e => setPeriod('custom')} className="flex-1 min-w-0 text-xs" />
           </div>
         </div>
       </div>

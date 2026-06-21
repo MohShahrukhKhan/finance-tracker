@@ -93,26 +93,30 @@ export default function Transactions() {
         </button>
       </div>
 
-      <div className="flex gap-2 flex-wrap items-center">
-        {[
-          { label: '7D', key: '7d' },
-          { label: '30D', key: '30d' },
-          { label: 'Month', key: 'month' },
-          { label: 'Year', key: 'year' },
-          { label: 'All', key: '' },
-        ].map(p => (
-          <button key={p.key} onClick={() => setQuickFilter(p.key)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${quick === p.key ? 'bg-indigo-500 text-white' : 'bg-[#1e293b] text-[#94a3b8] hover:bg-[#334155]'}`}>
-            {p.label}
-          </button>
-        ))}
-        <div className="h-5 w-px bg-[#334155]" />
-        <input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); setQuick(''); setPage(0) }} className="w-36 text-xs" placeholder="From" />
-        <input type="date" value={toDate} onChange={e => { setToDate(e.target.value); setQuick(''); setPage(0) }} className="w-36 text-xs" placeholder="To" />
-        <select value={categoryId} onChange={e => { setCatId(e.target.value); setPage(0) }} className="w-40 text-xs">
-          <option value="">All Categories</option>
-          {categories.map(c => <option key={c.uuid} value={c.uuid}>{getCategoryMeta(c.name).icon} {c.name}</option>)}
-        </select>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex gap-1.5 flex-wrap items-center">
+          {[
+            { label: '7D', key: '7d' },
+            { label: '30D', key: '30d' },
+            { label: 'Month', key: 'month' },
+            { label: 'Year', key: 'year' },
+            { label: 'All', key: '' },
+          ].map(p => (
+            <button key={p.key} onClick={() => setQuickFilter(p.key)}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${quick === p.key ? 'bg-indigo-500 text-white' : 'bg-[#1e293b] text-[#94a3b8] hover:bg-[#334155]'}`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2 flex-wrap items-center">
+          <input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); setQuick(''); setPage(0) }} className="flex-1 min-w-0 text-xs" placeholder="From" />
+          <span className="text-[#64748b] text-xs">–</span>
+          <input type="date" value={toDate} onChange={e => { setToDate(e.target.value); setQuick(''); setPage(0) }} className="flex-1 min-w-0 text-xs" placeholder="To" />
+          <select value={categoryId} onChange={e => { setCatId(e.target.value); setPage(0) }} className="w-32 text-xs">
+            <option value="">All</option>
+            {categories.map(c => <option key={c.uuid} value={c.uuid}>{getCategoryMeta(c.name).icon} {c.name}</option>)}
+          </select>
+        </div>
       </div>
 
       <div>
