@@ -115,37 +115,62 @@ export default function Transactions() {
         </select>
       </div>
 
-      <div className="card p-0 overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]">
-          <thead>
-            <tr className="border-b border-[#334155] text-[#94a3b8] text-left">
-              <th className="p-3 font-medium">Date</th>
-              <th className="p-3 font-medium">Category</th>
-              <th className="p-3 font-medium">Note</th>
-              <th className="p-3 font-medium text-right">Amount</th>
-              <th className="p-3 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map(t => {
-              const meta = getCategoryMeta(t.categoryName)
-              return (
-                <tr key={t.uuid} className="border-b border-[#334155] hover:bg-[#334155]/50">
-                  <td className="p-3">{t.transactionDate}</td>
-                  <td className="p-3">{meta.icon} {t.categoryName}</td>
-                  <td className="p-3 text-[#94a3b8]">{t.note || '-'}</td>
-                  <td className={`p-3 text-right font-medium ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
-                  </td>
-                  <td className="p-3 text-right">
-                    <button onClick={() => openEdit(t)} className="text-[#94a3b8] hover:text-white mr-2"><Pencil size={14} /></button>
-                    <button onClick={() => handleDelete(t.uuid)} className="text-red-400 hover:text-red-300"><Trash2 size={14} /></button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+      <div>
+        <div className="hidden md:block card p-0 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#334155] text-[#94a3b8] text-left">
+                <th className="p-3 font-medium">Date</th>
+                <th className="p-3 font-medium">Category</th>
+                <th className="p-3 font-medium">Note</th>
+                <th className="p-3 font-medium text-right">Amount</th>
+                <th className="p-3 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map(t => {
+                const meta = getCategoryMeta(t.categoryName)
+                return (
+                  <tr key={t.uuid} className="border-b border-[#334155] hover:bg-[#334155]/50">
+                    <td className="p-3">{t.transactionDate}</td>
+                    <td className="p-3">{meta.icon} {t.categoryName}</td>
+                    <td className="p-3 text-[#94a3b8]">{t.note || '-'}</td>
+                    <td className={`p-3 text-right font-medium ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
+                    </td>
+                    <td className="p-3 text-right">
+                      <button onClick={() => openEdit(t)} className="text-[#94a3b8] hover:text-white mr-2"><Pencil size={14} /></button>
+                      <button onClick={() => handleDelete(t.uuid)} className="text-red-400 hover:text-red-300"><Trash2 size={14} /></button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="md:hidden space-y-2">
+          {data.map(t => {
+            const meta = getCategoryMeta(t.categoryName)
+            const sign = t.type === 'INCOME' ? '+' : '-'
+            const color = t.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'
+            return (
+              <div key={t.uuid} className="card flex items-center gap-3">
+                <span className="text-xl">{meta.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{t.categoryName}{t.note ? ` — ${t.note}` : ''}</p>
+                  <p className="text-xs text-[#94a3b8]">{t.transactionDate}</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-sm font-semibold ${color}`}>{sign}{formatCurrency(t.amount)}</p>
+                </div>
+                <div className="flex gap-1">
+                  <button onClick={() => openEdit(t)} className="text-[#94a3b8] hover:text-white p-1"><Pencil size={14} /></button>
+                  <button onClick={() => handleDelete(t.uuid)} className="text-red-400 hover:text-red-300 p-1"><Trash2 size={14} /></button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
         {data.length === 0 && (
           <div className="py-12 text-center">
             <p className="text-3xl mb-3">📭</p>
