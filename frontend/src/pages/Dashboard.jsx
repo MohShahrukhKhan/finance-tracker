@@ -96,8 +96,8 @@ export default function Dashboard() {
             </button>
           ))}
           <div className="flex gap-2">
-            <input type="date" value={fmt(dates.from)} onChange={e => { setPeriod('custom'); /* handled via dates */ }} className="w-32 text-xs" />
-            <input type="date" value={fmt(dates.to)} onChange={e => setPeriod('custom')} className="w-32 text-xs" />
+            <input type="date" value={fmt(dates.from)} onChange={e => { setPeriod('custom'); /* handled via dates */ }} className="w-28 md:w-32 text-xs" />
+            <input type="date" value={fmt(dates.to)} onChange={e => setPeriod('custom')} className="w-28 md:w-32 text-xs" />
           </div>
         </div>
       </div>

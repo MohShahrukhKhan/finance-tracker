@@ -115,8 +115,8 @@ export default function Transactions() {
         </select>
       </div>
 
-      <div className="card p-0 overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="card p-0 overflow-x-auto">
+        <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="border-b border-[#334155] text-[#94a3b8] text-left">
               <th className="p-3 font-medium">Date</th>
