@@ -15,10 +15,10 @@ import java.io.IOException;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final TokenService tokenService;
 
-    public JwtFilter(JwtService jwtService) {
-        this.jwtService = jwtService;
+    public JwtFilter(TokenService tokenService) {
+        this.tokenService = tokenService;
     }
 
     @Override
@@ -35,12 +35,12 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        if (!jwtService.validateToken(token)) {
+        if (!tokenService.validateToken(token)) {
             chain.doFilter(request, response);
             return;
         }
 
-        String email = jwtService.extractEmail(token);
+        String email = tokenService.extractEmail(token);
         UsernamePasswordAuthenticationToken auth =
             new UsernamePasswordAuthenticationToken(email, null, null);
         auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

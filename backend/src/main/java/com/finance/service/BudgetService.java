@@ -10,8 +10,6 @@ import com.finance.exception.ResourceNotFoundException;
 import com.finance.repository.BudgetRepository;
 import com.finance.repository.CategoryRepository;
 import com.finance.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Tuple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,16 +23,13 @@ public class BudgetService {
     private final BudgetRepository budgetRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
-    private final EntityManager em;
 
     public BudgetService(BudgetRepository budgetRepository,
                          CategoryRepository categoryRepository,
-                         UserRepository userRepository,
-                         EntityManager em) {
+                         UserRepository userRepository) {
         this.budgetRepository = budgetRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
-        this.em = em;
     }
 
     @Transactional(readOnly = true)
@@ -83,24 +78,9 @@ public class BudgetService {
 
     private BudgetResponse toResponse(Budget budget, String email) {
         User user = getUser(email);
-        String sql = """
-            SELECT COALESCE(SUM(t.amount), 0) AS spent
-            FROM transactions t
-            WHERE t.user_id = :userId
-              AND t.category_id = :categoryId
-              AND t.transaction_date >= :start
-              AND t.transaction_date < :end
-              AND t.deleted = false
-            """;
-
-        Tuple result = (Tuple) em.createNativeQuery(sql, Tuple.class)
-            .setParameter("userId", user.getId())
-            .setParameter("categoryId", budget.getCategory().getId())
-            .setParameter("start", budget.getMonth())
-            .setParameter("end", budget.getMonth().plusMonths(1))
-            .getSingleResult();
-
-        BigDecimal spent = toBigDecimal(result.get("spent"));
+        BigDecimal spent = budgetRepository.calculateSpent(
+            user.getId(), budget.getCategory().getId(),
+            budget.getMonth(), budget.getMonth().plusMonths(1));
         int percentage = budget.getLimitAmount().compareTo(BigDecimal.ZERO) > 0
             ? spent.multiply(BigDecimal.valueOf(100))
                 .divide(budget.getLimitAmount(), 0, java.math.RoundingMode.HALF_UP)
@@ -120,11 +100,5 @@ public class BudgetService {
     private User getUser(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    }
-
-    private BigDecimal toBigDecimal(Object value) {
-        if (value instanceof BigDecimal bd) return bd;
-        if (value instanceof Number n) return BigDecimal.valueOf(n.doubleValue());
-        return BigDecimal.ZERO;
     }
 }

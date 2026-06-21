@@ -10,7 +10,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
-public class JwtService {
+public class JwtService implements TokenService {
 
     private final SecretKey secretKey;
     private final long expirationMs;

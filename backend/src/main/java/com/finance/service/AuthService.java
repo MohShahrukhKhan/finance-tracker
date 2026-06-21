@@ -1,6 +1,6 @@
 package com.finance.service;
 
-import com.finance.config.JwtService;
+import com.finance.config.TokenService;
 import com.finance.dto.AuthResponse;
 import com.finance.dto.LoginRequest;
 import com.finance.dto.RegisterRequest;
@@ -18,16 +18,16 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       JwtService jwtService,
+                       TokenService tokenService,
                        AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
+        this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
     }
 
@@ -42,7 +42,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.password()));
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user.getEmail());
+        String token = tokenService.generateToken(user.getEmail());
         return new AuthResponse(token);
     }
 
@@ -55,7 +55,7 @@ public class AuthService {
             throw new BadCredentialsException("Invalid email or password");
         }
 
-        String token = jwtService.generateToken(request.email());
+        String token = tokenService.generateToken(request.email());
         return new AuthResponse(token);
     }
 }
