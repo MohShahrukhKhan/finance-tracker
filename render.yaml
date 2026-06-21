@@ -1,18 +1,15 @@
 services:
   - type: web
     name: finance-tracker-api
-    env: java
+    env: docker
     plan: free
-    buildCommand: mvn clean package -DskipTests
-    startCommand: java -jar target/finance-tracker-1.0.0.jar --spring.profiles.active=prod
+    dockerfilePath: ./backend/Dockerfile
     envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
       - key: DATABASE_URL
         sync: false
-      - key: DATABASE_USERNAME
-        sync: false
-      - key: DATABASE_PASSWORD
-        sync: false
       - key: JWT_SECRET
-        generateValue: 404e635266556a586e3272357538782f413f4428472b4b6250645367566b5970337336763979244226452948404d635166546a576e5a7234753778214125442a47
+        sync: false
       - key: FRONTEND_URL
         value: https://finance-tracker.vercel.app
