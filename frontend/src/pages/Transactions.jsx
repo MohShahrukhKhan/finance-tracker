@@ -134,8 +134,8 @@ export default function Transactions() {
                   <td className="p-3">{t.transactionDate}</td>
                   <td className="p-3">{meta.icon} {t.categoryName}</td>
                   <td className="p-3 text-[#94a3b8]">{t.note || '-'}</td>
-                  <td className={`p-3 text-right font-medium ${t.categoryType === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {t.categoryType === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
+                  <td className={`p-3 text-right font-medium ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
                   </td>
                   <td className="p-3 text-right">
                     <button onClick={() => openEdit(t)} className="text-[#94a3b8] hover:text-white mr-2"><Pencil size={14} /></button>

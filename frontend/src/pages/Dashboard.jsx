@@ -64,6 +64,9 @@ export default function Dashboard() {
     ? Math.round((1 - Number(summary.expense) / Number(summary.income)) * 100)
     : 0
 
+  const savingsLabel = savingsRate >= 50 ? 'Excellent' : savingsRate >= 30 ? 'Good' : savingsRate >= 15 ? 'Fair' : 'Low'
+  const savingsColor = savingsRate >= 50 ? 'text-emerald-400' : savingsRate >= 30 ? 'text-indigo-400' : savingsRate >= 15 ? 'text-amber-400' : 'text-red-400'
+
   const prevIncome = prevSummary ? Number(prevSummary.income) : 0
   const prevExpense = prevSummary ? Number(prevSummary.expense) : 0
   const currIncome = summary ? Number(summary.income) : 0
@@ -122,7 +125,9 @@ export default function Dashboard() {
             </div>
             <div className="card">
               <p className="text-xs text-[#94a3b8] uppercase tracking-wider">Savings Rate</p>
-              <p className="text-xl font-bold text-indigo-400 mt-1">{savingsRate}%</p>
+              <p className="text-xl font-bold text-indigo-400 mt-1">{savingsRate}%
+                <span className={`text-sm font-medium ml-2 ${savingsColor}`}>{savingsLabel}</span>
+              </p>
               <p className="text-xs text-[#94a3b8] mt-1">of income saved</p>
             </div>
             <div className="card">
@@ -207,8 +212,8 @@ export default function Dashboard() {
                         <p className="text-xs text-[#94a3b8]">{t.note || t.transactionDate}</p>
                       </div>
                     </div>
-                    <p className={`text-sm font-semibold ${t.categoryType === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {t.categoryType === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
+                    <p className={`text-sm font-semibold ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {t.type === 'INCOME' ? '+' : '-'}{formatCurrency(t.amount)}
                     </p>
                   </div>
                 )
